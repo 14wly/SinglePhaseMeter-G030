@@ -65,6 +65,10 @@ void Error_Handler(void);
 #define key1_GPIO_Port GPIOB
 #define ctr_485_Pin GPIO_PIN_15
 #define ctr_485_GPIO_Port GPIOB
+#define I2C1_SCL_Pin GPIO_PIN_9
+#define I2C1_SCL_GPIO_Port GPIOA
+#define I2C1_SDA_Pin GPIO_PIN_10
+#define I2C1_SDA_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
