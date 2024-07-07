@@ -40,8 +40,8 @@
 不能同时两个都同时取消注释！
 在stm32cubemx中初始化时需要将SCL和SDA引脚的"user lable"分别设置为I2C3_SCL和I2C3_SDA。
 */
-#define OLED_USE_HW_I2C	// 硬件I2C
-// #define OLED_USE_SW_I2C	// 软件I2C
+// #define OLED_USE_HW_I2C	// 硬件I2C
+#define OLED_USE_SW_I2C	// 软件I2C
 
 /*引脚定义，可在此处修改I2C通信引脚*/
 #define OLED_SCL            I2C1_SCL_Pin // SCL
@@ -63,7 +63,7 @@ extern  I2C_HandleTypeDef   hi2c1;	//HAL库使用，指定硬件IIC接口
 /*I2C超时时间*/
 #define OLED_I2C_TIMEOUT 10
 /*软件I2C用的延时时间，下面数值为170MHz主频要延时的值，如果你的主频不一样可以修改一下，100MHz以内的主频改成0就行*/
-#define Delay_time 0
+#define Delay_time 1
 
 /**
  * 数据存储格式：
@@ -178,11 +178,11 @@ void OLED_GPIO_Init(void)
  	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;	        // 设置GPIO模式为开漏输出模式
     GPIO_InitStruct.Pull = GPIO_PULLUP;                 // 内部上拉电阻
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;  // 设置GPIO速度为高速
-	GPIO_InitStruct.Pin = I2C3_SDA_Pin;                 // 设置引脚
- 	HAL_GPIO_Init(I2C3_SDA_GPIO_Port, &GPIO_InitStruct);// 初始化GPIO
+	GPIO_InitStruct.Pin = I2C1_SDA_Pin;                 // 设置引脚
+ 	HAL_GPIO_Init(I2C1_SDA_GPIO_Port, &GPIO_InitStruct);// 初始化GPIO
 
-    GPIO_InitStruct.Pin = I2C3_SCL_Pin;
-    HAL_GPIO_Init(I2C3_SCL_GPIO_Port, &GPIO_InitStruct);
+    GPIO_InitStruct.Pin = I2C1_SCL_Pin;
+    HAL_GPIO_Init(I2C1_SCL_GPIO_Port, &GPIO_InitStruct);
 
 	/*释放SCL和SDA*/
 	OLED_W_SCL(1);

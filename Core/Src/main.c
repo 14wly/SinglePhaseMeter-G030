@@ -97,13 +97,17 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint16_t num = 0;
   while (1)
   {
     HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);//正常工作,常亮
     OLED_ShowString(0,0,"hello,world!",OLED_8X16);
+    OLED_ShowNum(0,16,num,5,OLED_8X16);
+    num++;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    HAL_Delay(500);
     OLED_Update();
   }
   /* USER CODE END 3 */
