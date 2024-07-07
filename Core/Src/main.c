@@ -19,12 +19,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stdio.h"
 #include "OLED.h"
 /* USER CODE END Includes */
 
@@ -46,6 +49,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint32_t timeMark = 0;//全局时间量，�?10us�?1
+uint16_t Voltage = 0;
+uint16_t Current = 0;
+uint16_t Power = 0;
+uint16_t Freq = 0;
+uint16_t voltageAndCurrentValue[512] = {0};
 
 /* USER CODE END PV */
 
@@ -57,7 +66,35 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+//串口重定向
+int fputc(int ch, FILE *f){
+  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xffff);
+  return ch;
+}
+//输入1个十进制的数，返回十进制数的长度
+uint8_t numBitCount(uint32_t number){
+  uint8_t Length = 0;
+  if (number == 0) return 1;  
+  while (number)
+  {
+    number = number/10;
+    Length++;
+  }
+  return Length;
+}
+//更新数据
+void updateData(void){
+  OLED_Clear();
+  OLED_ShowString(0,0,"Voltage:",OLED_8X16);
+  OLED_ShowString(0,16,"Current:",OLED_8X16);
+  OLED_ShowString(0,32,"Power:",OLED_8X16);
+  OLED_ShowString(0,48,"Freq:",OLED_8X16);
+  OLED_ShowNum(64,0,Voltage,numBitCount(Voltage),OLED_8X16);
+  OLED_ShowNum(64,16,Current,numBitCount(Current),OLED_8X16);
+  OLED_ShowNum(64,32,Power,numBitCount(Power),OLED_8X16);
+  OLED_ShowNum(64,48,Freq,numBitCount(Freq),OLED_8X16);
+  OLED_Update();
+}
 /* USER CODE END 0 */
 
 /**
@@ -88,27 +125,31 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_USART1_UART_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
   OLED_Init();
+  HAL_TIM_Base_Start_IT(&htim14);
+  HAL_ADCEx_Calibration_Start(&hadc1);
+  HAL_ADC_Start_DMA(&hadc1,(uint32_t*)voltageAndCurrentValue,sizeof(voltageAndCurrentValue)/sizeof(uint16_t));
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint16_t num = 0;
   while (1)
   {
     HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);//正常工作,常亮
-    OLED_ShowString(0,0,"hello,world!",OLED_8X16);
-    OLED_ShowNum(0,16,num,5,OLED_8X16);
-    num++;
+    updateData();//刷新数据到OLED
+    // HAL_ADC_Start(&hadc1);
+    // HAL_ADC_PollForConversion(&hadc1,50);
+    // OLED_ShowNum(0,16,HAL_ADC_GetValue(&hadc1),numBitCount(HAL_ADC_GetValue(&hadc1)),OLED_8X16);
+    // HAL_ADC_Stop(&hadc1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    HAL_Delay(500);
-    OLED_Update();
   }
   /* USER CODE END 3 */
 }
@@ -129,14 +170,12 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV1;
-  RCC_OscInitStruct.PLL.PLLN = 8;
+  RCC_OscInitStruct.PLL.PLLN = 16;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -159,7 +198,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim == &htim14)
+  {
+    timeMark++;
+  }
+}
 /* USER CODE END 4 */
 
 /**
