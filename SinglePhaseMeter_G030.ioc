@@ -1,6 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.ClockPrescaler=ADC_CLOCK_SYNC_PCLK_DIV4
-ADC1.ContinuousConvMode=DISABLE
+ADC1.ContinuousConvMode=ENABLE
 ADC1.DMAContinuousRequests=ENABLE
 ADC1.DiscontinuousConvMode=DISABLE
 ADC1.IPParameters=NbrOfConversionFlag,ClockPrescaler,ContinuousConvMode,NbrOfConversion,master,SelectedChannel,DiscontinuousConvMode,Sequencer,DMAContinuousRequests
@@ -17,7 +17,7 @@ Dma.ADC1.0.EventEnable=DISABLE
 Dma.ADC1.0.Instance=DMA1_Channel1
 Dma.ADC1.0.MemDataAlignment=DMA_MDATAALIGN_HALFWORD
 Dma.ADC1.0.MemInc=DMA_MINC_ENABLE
-Dma.ADC1.0.Mode=DMA_CIRCULAR
+Dma.ADC1.0.Mode=DMA_NORMAL
 Dma.ADC1.0.PeriphDataAlignment=DMA_PDATAALIGN_HALFWORD
 Dma.ADC1.0.PeriphInc=DMA_PINC_DISABLE
 Dma.ADC1.0.Polarity=HAL_DMAMUX_REQ_GEN_RISING

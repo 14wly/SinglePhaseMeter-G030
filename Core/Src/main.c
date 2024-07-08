@@ -49,12 +49,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t timeMark = 0;//全局时间量，�?10us�?1
+uint32_t timeMark = 0;//全局时间量，�??10us�??1
 uint16_t Voltage = 0;
 uint16_t Current = 0;
 uint16_t Power = 0;
 uint16_t Freq = 0;
-uint16_t voltageAndCurrentValue[512] = {0};
+uint16_t voltageAndCurrentValue[1024] = {0};
 
 /* USER CODE END PV */
 
@@ -66,6 +66,15 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+//清空数组
+void clearArray(uint16_t* Array,uint32_t Length,uint16_t defaultValue){
+  for (int i = 0; i < Length; i++)
+  {
+    *Array = defaultValue;
+    Array++;
+  }
+  
+}
 //串口重定向
 int fputc(int ch, FILE *f){
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xffff);
@@ -93,6 +102,10 @@ void updateData(void){
   OLED_ShowNum(64,16,Current,numBitCount(Current),OLED_8X16);
   OLED_ShowNum(64,32,Power,numBitCount(Power),OLED_8X16);
   OLED_ShowNum(64,48,Freq,numBitCount(Freq),OLED_8X16);
+  OLED_ShowString(112,0,"V",OLED_8X16);
+  OLED_ShowString(112,16,"mA",OLED_8X16);
+  OLED_ShowString(112,32,"W",OLED_8X16);
+  OLED_ShowString(112,48,"Hz",OLED_8X16);
   OLED_Update();
 }
 /* USER CODE END 0 */
@@ -139,14 +152,43 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint16_t voltageMax = 0;
+  uint16_t currentMax = 0;
   while (1)
   {
     HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);//正常工作,常亮
+
+    if (voltageAndCurrentValue[sizeof(voltageAndCurrentValue)/sizeof(uint16_t) - 1] != 0x0000)
+    {
+      HAL_ADC_Stop_DMA(&hadc1);
+
+      for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
+      {
+        if (voltageAndCurrentValue[i] > voltageMax)
+        {
+          voltageMax = voltageAndCurrentValue[i];
+        }
+      }
+      Voltage = ((voltageMax* 610)/4096)-240;
+      Voltage = Voltage/1.414;
+
+      for (int i = 1; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
+      {
+       if (voltageAndCurrentValue[i] > currentMax)
+       {
+         currentMax = voltageAndCurrentValue[i];
+       }
+      }
+      Current = (currentMax * 3300/4096) - 2150;
+      Power = Voltage * (Current/1000); 
+      // for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i++)
+      // {
+      //   printf("%d ",voltageAndCurrentValue[i]);
+      // }
+      clearArray(voltageAndCurrentValue,sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]),0x0000);
+      HAL_ADC_Start_DMA(&hadc1,(uint32_t*)voltageAndCurrentValue,sizeof(voltageAndCurrentValue)/sizeof(uint16_t));
+    }
     updateData();//刷新数据到OLED
-    // HAL_ADC_Start(&hadc1);
-    // HAL_ADC_PollForConversion(&hadc1,50);
-    // OLED_ShowNum(0,16,HAL_ADC_GetValue(&hadc1),numBitCount(HAL_ADC_GetValue(&hadc1)),OLED_8X16);
-    // HAL_ADC_Stop(&hadc1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
