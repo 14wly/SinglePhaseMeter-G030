@@ -9,6 +9,7 @@
                 "d:\\Files_user\\MyProgram\\1_C_proj\\1_keil_proj\\SinglePhaseMeter_G030\\Drivers\\CMSIS\\Device\\ST\\STM32G0xx\\Include",
                 "d:\\Files_user\\MyProgram\\1_C_proj\\1_keil_proj\\SinglePhaseMeter_G030\\Drivers\\CMSIS\\Include",
                 "d:\\Files_user\\MyProgram\\1_C_proj\\1_keil_proj\\SinglePhaseMeter_G030\\Hardware\\OLED",
+                "d:\\Files_user\\MyProgram\\1_C_proj\\1_keil_proj\\SinglePhaseMeter_G030\\Software\\Kalman",
                 "D:\\ProgramFiles\\Keilv5\\ARM\\ARMCC\\include",
                 "D:\\ProgramFiles\\Keilv5\\ARM\\ARMCC\\include\\rw",
                 "d:\\Files_user\\MyProgram\\1_C_proj\\1_keil_proj\\SinglePhaseMeter_G030\\MDK-ARM",

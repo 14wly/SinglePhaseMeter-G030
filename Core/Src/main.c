@@ -49,12 +49,12 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t timeMark = 0;//全局时间量，�??10us�??1
+uint32_t timeMark = 0;//全局时间量，spend 10us add 1
 uint16_t Voltage = 0;
 uint16_t Current = 0;
 uint16_t Power = 0;
 uint16_t Freq = 0;
-uint16_t voltageAndCurrentValue[1024] = {0};
+uint16_t voltageAndCurrentValue[2048] = {0};
 
 /* USER CODE END PV */
 
@@ -75,7 +75,7 @@ void clearArray(uint16_t* Array,uint32_t Length,uint16_t defaultValue){
   }
   
 }
-//串口重定向
+//串口重定�?
 int fputc(int ch, FILE *f){
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xffff);
   return ch;
@@ -154,6 +154,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   uint16_t voltageMax = 0;
   uint16_t currentMax = 0;
+  uint16_t maxVoltageLocation = 0;
+  uint16_t minVoltageLocation = 0;
   while (1)
   {
     HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);//正常工作,常亮
@@ -161,7 +163,7 @@ int main(void)
     if (voltageAndCurrentValue[sizeof(voltageAndCurrentValue)/sizeof(uint16_t) - 1] != 0x0000)
     {
       HAL_ADC_Stop_DMA(&hadc1);
-
+      //电压
       for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
       {
         if (voltageAndCurrentValue[i] > voltageMax)
@@ -169,9 +171,9 @@ int main(void)
           voltageMax = voltageAndCurrentValue[i];
         }
       }
-      Voltage = ((voltageMax* 610)/4096)-240;
+      Voltage = ((voltageMax* 600)/4096)-240;
       Voltage = Voltage/1.414;
-
+      //电流
       for (int i = 1; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
       {
        if (voltageAndCurrentValue[i] > currentMax)
@@ -179,12 +181,35 @@ int main(void)
          currentMax = voltageAndCurrentValue[i];
        }
       }
-      Current = (currentMax * 3300/4096) - 2150;
-      Power = Voltage * (Current/1000); 
-      // for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i++)
+      Current = (currentMax * 3300/4096) - 2240;
+			if(Current > 3000) Current = 0;
+			Current = Current/1.414;
+      Power = Voltage * Current / 1000; 
+      //频率
+			uint16_t max = 0;
+			uint16_t min = voltageAndCurrentValue[0];
+      for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
+      {
+        if (voltageAndCurrentValue[i] > max)
+        {
+          max =  voltageAndCurrentValue[i];
+          maxVoltageLocation = i;
+        }
+        if (voltageAndCurrentValue[i] < min)
+        {
+          min = voltageAndCurrentValue[i];
+          minVoltageLocation = i;
+        }
+      }
+      uint16_t distance = (maxVoltageLocation > minVoltageLocation)?(maxVoltageLocation - minVoltageLocation):(minVoltageLocation - maxVoltageLocation);
+      double Frequeny = 1000000/(distance * 10.8125);
+      Freq = Frequeny/2;
+			
+      // for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
       // {
       //   printf("%d ",voltageAndCurrentValue[i]);
       // }
+      // HAL_Delay(5000);
       clearArray(voltageAndCurrentValue,sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]),0x0000);
       HAL_ADC_Start_DMA(&hadc1,(uint32_t*)voltageAndCurrentValue,sizeof(voltageAndCurrentValue)/sizeof(uint16_t));
     }

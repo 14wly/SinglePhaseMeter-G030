@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "oled.h": "c"
+        "oled.h": "c",
+        "kalman_filter.h": "c"
     }
 }
