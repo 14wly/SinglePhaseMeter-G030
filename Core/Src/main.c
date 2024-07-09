@@ -156,8 +156,12 @@ int main(void)
   uint16_t currentMax = 0;
   uint16_t maxVoltageLocation = 0;
   uint16_t minVoltageLocation = 0;
+
   double freqAccumulator = 0;
+  double currentAccumulator = 0;
+  double voltageAccumulator = 0;
   uint16_t AccumulateCount = 1;
+
   while (1)
   {
     HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);//正常工作,常亮
@@ -173,8 +177,8 @@ int main(void)
           voltageMax = voltageAndCurrentValue[i];
         }
       }
-      Voltage = ((voltageMax* 600)/4096)-240;
-      Voltage = Voltage/1.414;
+      voltageAccumulator += ((voltageMax* 600)/4096)-240;
+      Voltage = voltageAccumulator/(1.414 * AccumulateCount);
       //电流
       for (int i = 1; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
       {
@@ -185,7 +189,8 @@ int main(void)
       }
       Current = (currentMax * 3300/4096) - 2240;
 			if(Current > 3000) Current = 0;
-			Current = Current/1.414;
+      currentAccumulator += Current;
+			Current = currentAccumulator/(1.414 * AccumulateCount);
       Power = Voltage * Current / 1000; 
       //频率
 			uint16_t max = 0;
@@ -208,6 +213,14 @@ int main(void)
       freqAccumulator += Frequeny;
       Freq = freqAccumulator / (AccumulateCount * 2);
 			AccumulateCount++;
+
+      //累加值清零,防止溢出
+      if(AccumulateCount == 2000){
+        AccumulateCount = 1;
+        freqAccumulator = 0;
+        currentAccumulator = 0;
+        voltageAccumulator = 0;
+      }
       // for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2){
       //   printf("%d ",voltageAndCurrentValue[i]);
       // }
