@@ -156,6 +156,8 @@ int main(void)
   uint16_t currentMax = 0;
   uint16_t maxVoltageLocation = 0;
   uint16_t minVoltageLocation = 0;
+  double freqAccumulator = 0;
+  uint16_t AccumulateCount = 1;
   while (1)
   {
     HAL_GPIO_WritePin(LED1_GPIO_Port,LED1_Pin,GPIO_PIN_RESET);//正常工作,常亮
@@ -202,11 +204,11 @@ int main(void)
         }
       }
       uint16_t distance = (maxVoltageLocation > minVoltageLocation)?(maxVoltageLocation - minVoltageLocation):(minVoltageLocation - maxVoltageLocation);
-      double Frequeny = 1000000/(distance * 10.8125);
-      Freq = Frequeny/2;
-			
-      // for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2)
-      // {
+      double Frequeny = 1000000/((distance - 1) * 10.8125);
+      freqAccumulator += Frequeny;
+      Freq = freqAccumulator / (AccumulateCount * 2);
+			AccumulateCount++;
+      // for (int i = 0; i < sizeof(voltageAndCurrentValue)/sizeof(voltageAndCurrentValue[0]); i += 2){
       //   printf("%d ",voltageAndCurrentValue[i]);
       // }
       // HAL_Delay(5000);

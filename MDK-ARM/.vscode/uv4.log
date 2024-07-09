@@ -35,7 +35,7 @@ ROMTableAddr = 0xF0000000
 Target info:
 ------------
 Device: STM32G030C8Tx
-VTarget = 3.282V
+VTarget = 3.291V
 State of Pins: TCK: 0, TDI: 1, TDO: 0, TMS: 1, TRES: 1, TRST: 0
 Hardware-Breakpoints: 4
 Software-Breakpoints: 8192
@@ -45,4 +45,4 @@ JTAG speed: 4000 kHz
 Erase Done.Programming Done.Verify OK.* JLink Info: Reset: Halt core after reset via DEMCR.VC_CORERESET.
 * JLink Info: Reset: Reset device via AIRCR.SYSRESETREQ.
 Application running ...
-Flash Load finished at 21:10:28
+Flash Load finished at 12:49:38
