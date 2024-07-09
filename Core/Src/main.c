@@ -187,7 +187,7 @@ int main(void)
          currentMax = voltageAndCurrentValue[i];
        }
       }
-      Current = (currentMax * 3300/4096) - 2240;
+      Current = (currentMax * 3300/4096) - 2243;
 			if(Current > 3000) Current = 0;
       currentAccumulator += Current;
 			Current = currentAccumulator/(1.414 * AccumulateCount);
